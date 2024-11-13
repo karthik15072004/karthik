@@ -58,7 +58,7 @@ Time", "VM");
         } 
  
         for (int i = Math.max(0, taskCount - vmCount); i < taskCount; i++) { 
-NAME:KRISHNA KOUSHIK                                                                                                 REG NO:22MIC0157 
+                                                                                            
             totalWt += tasks.get(i).wt; 
         } 
  
@@ -138,7 +138,7 @@ public class Scheduler {
  
         Task[] tasks = new Task[n]; 
         float[] vmWaitingTime = new float[vmCount]; 
-NAME:KRISHNA KOUSHIK                                                                                                 REG NO:22MIC0157 
+                                                                                             
         float[] previousExecutionTime = new float[vmCount]; 
  
         for (int i = 0; i < n; i++) { 
@@ -226,7 +226,7 @@ public class Scheduler {
         for (int i = 0; i < numTasks; i++) { 
             System.out.print("Enter length for Task " + (i + 1) + ": "); 
             double length = scanner.nextDouble(); 
-NAME:KRISHNA KOUSHIK                                                                                                 REG NO:22MIC0157 
+                                                                                         
             System.out.print("Enter execution time for Task " + (i + 1) + ": 
 "); 
             double et = scanner.nextDouble(); 
@@ -275,8 +275,7 @@ NAME:KRISHNA KOUSHIK                                                            
                 overallCompletionTime = completionTime; 
             } 
         } 
-NAME:KRISHNA KOUSHIK                                                                                                 
-REG NO:22MIC0157 
+ 
 double averageWaitingTime = abb / numVMs; 
 System.out.println("Total Waiting Time = " + abb); 
 System.out.println("Average Waiting Time = " + averageWaitingTime); 
@@ -301,7 +300,7 @@ this.vmId = 0;
 } 
 } 
 public class Scheduler { 
-NAME:KRISHNA KOUSHIK                                                                                                 REG NO:22MIC0157 
+
  
     public static void sortTasksByLength(Task[] tasks) { 
         for (int i = 0; i < tasks.length - 1; i++) { 
@@ -350,8 +349,8 @@ vmWaitingTime[vmId] + previousExecutionTime[vmId] : 0;
             System.out.printf("%d\t%d\t%.2f\t\t%.2f\t\t%.2f\n", 
 tasks[i].taskId, tasks[i].vmId, tasks[i].length, tasks[i].executionTime, 
 waitingTime); 
-NAME:KRISHNA KOUSHIK                                                                                                 
-REG NO:22MIC0157 
+                                                                                               
+
 vmWaitingTime[vmId] += previousExecutionTime[vmId]; 
 previousExecutionTime[vmId] = tasks[i].executionTime; 
 } 
