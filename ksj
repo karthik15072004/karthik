@@ -1,370 +1,279 @@
 #fcfs
-import java.util.ArrayList; 
-import java.util.List; 
-import java.util.Scanner; 
-class T { 
-String n; 
-double et; 
-double wt; 
-T(String n, double et) { 
-this.n = n; 
-this.et = et; 
-this.wt = 0; 
-} 
-} 
-class V { 
-    String n; 
-    double et; 
- 
-    V(String n) { 
-        this.n = n; 
-        this.et = 0; 
-    } 
-} 
- 
-public class Scheduler { 
- 
-    public static void assignTasks(List<T> tasks, List<V> vms) { 
-        int vmCount = vms.size(); 
- 
-        for (int i = 0; i < vmCount && i < tasks.size(); i++) { 
-            tasks.get(i).wt = 0; 
-            vms.get(i).et = tasks.get(i).et; 
-        } 
- 
-        for (int i = vmCount; i < tasks.size(); i++) { 
-            V vm = vms.get(i % vmCount); 
-            T task = tasks.get(i); 
-            task.wt = vm.et; 
-            vm.et += task.et; 
-        } 
-    } 
- 
-    public static void printSchedule(List<T> tasks, List<V> vms) { 
-        double totalWt = 0; 
-        int vmCount = vms.size(); 
-        int taskCount = tasks.size(); 
- 
-        System.out.printf("%-10s%-10s%-15s%-10s\n", "Task", "ET", "Waiting 
-Time", "VM"); 
-        System.out.println("---------------------------------------------------"); 
- 
-        for (int i = 0; i < taskCount; i++) { 
-            System.out.printf("%-10s%-10.2f%-15.2f%-10s\n", 
-                    tasks.get(i).n, 
-                    tasks.get(i).et, 
-                    tasks.get(i).wt, 
-                    vms.get(i % vmCount).n); 
-        } 
- 
-        for (int i = Math.max(0, taskCount - vmCount); i < taskCount; i++) { 
-                                                                                            
-            totalWt += tasks.get(i).wt; 
-        } 
- 
-        System.out.println("\nTotal Waiting Time (last " + Math.min(vmCount, 
-taskCount) + " tasks): " + totalWt); 
-        System.out.println("Average Waiting Time: " + (vmCount > 0 ? totalWt / 
-Math.min(vmCount, taskCount) : 0)); 
-    } 
- 
-    public static void main(String[] args) { 
-        Scanner sc = new Scanner(System.in); 
- 
-        System.out.print("Enter the number of tasks: "); 
-        int tCount = sc.nextInt(); 
- 
-        List<T> tasks = new ArrayList<>(); 
- 
-        for (int i = 1; i <= tCount; i++) { 
-            System.out.print("Enter the execution time for Task " + i + ": "); 
-            double et = sc.nextDouble(); 
-            tasks.add(new T("T" + i, et)); 
-        } 
- 
-        System.out.print("Enter the number of VMs: "); 
-        int vmCount = sc.nextInt(); 
- 
-        List<V> vms = new ArrayList<>(); 
-        for (int i = 1; i <= vmCount; i++) { 
-            vms.add(new V("VM" + i)); 
-        } 
- 
-        assignTasks(tasks, vms); 
-        printSchedule(tasks, vms); 
-    } 
-}
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+ int num_tasks, num_vms;
+ printf("Enter the number of tasks: ");
+ scanf("%d", &num_tasks);
+ printf("Enter the number of virtual machines (VMs) used: ");
+ scanf("%d", &num_vms);
+ double *task_length = (double *)malloc(num_tasks * sizeof(double));
+ double *execution_time = (double *)malloc(num_tasks * sizeof(double));
+ double *vm_waiting_time = (double *)malloc(num_vms * sizeof(double));
+ double *vm_last_task_end = (double *)malloc(num_vms * sizeof(double));
+ for (int i = 0; i < num_vms; i++) {
+ vm_waiting_time[i] = 0;
+ vm_last_task_end[i] = 0;
 
+ }
+ for (int i = 0; i < num_tasks; i++) {
+ printf("Enter the length of task %d: ", i + 1);
+ scanf("%lf", &task_length[i]);
+ printf("Enter the execution time of task %d: ", i + 1);
+ scanf("%lf", &execution_time[i]);
+ }
+ printf("\nTask\tLength\tExecution Time\tAssigned VM\tWaiting Time\n");
+ printf("-----------------------------------------------------------\n");
+ for (int i = 0; i < num_tasks; i++) {
+ int vm_index = i % num_vms;
+ printf("%d\t%.2lf\t%.2lf\t\tVM %d\t\t%.2lf\n", i + 1, task_length[i], execution_time[i], vm_index +
+1, vm_waiting_time[vm_index]);
+ vm_waiting_time[vm_index] += vm_last_task_end[vm_index];
+ vm_last_task_end[vm_index] = execution_time[i];
+ }
+ printf("\nVM\tFinal Waiting Time\n");
+ printf("----------------------------\n");
+ double total_waiting_time = 0;
+ for (int i = 0; i < num_vms; i++) {
+ printf("VM %d\t%.2lf\n", i + 1, vm_waiting_time[i]);
+ total_waiting_time += vm_waiting_time[i];
+ }
+ double average_waiting_time = total_waiting_time / num_vms;
+ printf("\nTotal Waiting Time: %.2lf\n", total_waiting_time);
+ printf("Average Waiting Time (per VM): %.2lf\n", average_waiting_time);
+ free(task_length);
+ free(execution_time);
+ free(vm_waiting_time);
+ free(vm_last_task_end);
+ return 0;
+}
 
 
 #sjf
-import java.util.Scanner; 
- 
-class Task { 
-    int taskId; 
-    float length; 
-    float executionTime; 
-    int vmId; 
- 
-    Task(int taskId, float length, float executionTime) { 
-        this.taskId = taskId; 
-        this.length = length; 
-        this.executionTime = executionTime; 
-        this.vmId = 0;  
-    } 
-} 
- 
-public class Scheduler { 
- 
-    public static void sortTasksByLength(Task[] tasks) { 
-        for (int i = 0; i < tasks.length - 1; i++) { 
-            for (int j = 0; j < tasks.length - 1 - i; j++) { 
-                if (tasks[j].length > tasks[j + 1].length) { 
-                    Task temp = tasks[j]; 
-                    tasks[j] = tasks[j + 1]; 
-                    tasks[j + 1] = temp; 
-                } 
-            } 
-        } 
-    } 
- 
-    public static void main(String[] args) { 
-        Scanner sc = new Scanner(System.in); 
- 
-        System.out.print("Enter the number of tasks: "); 
-        int n = sc.nextInt(); 
-        System.out.print("Enter the number of virtual machines (VMs): "); 
-        int vmCount = sc.nextInt(); 
- 
-        Task[] tasks = new Task[n]; 
-        float[] vmWaitingTime = new float[vmCount]; 
-                                                                                             
-        float[] previousExecutionTime = new float[vmCount]; 
- 
-        for (int i = 0; i < n; i++) { 
-            System.out.print("Enter the length of task " + (i + 1) + ": "); 
-            float length = sc.nextFloat(); 
-            System.out.print("Enter the execution time of task " + (i + 1) + 
-": "); 
-            float executionTime = sc.nextFloat(); 
-            tasks[i] = new Task(i + 1, length, executionTime); 
-        } 
- 
-        sortTasksByLength(tasks); 
- 
-        System.out.println("\nTask Schedule:"); 
-        System.out.printf("TaskID\tVMID\tTask Length\tExecution Time\tWaiting 
-Time\n"); 
- 
-        for (int i = 0; i < n; i++) { 
-            int vmId = i % vmCount; 
-            tasks[i].vmId = vmId + 1; 
-            float waitingTime = (previousExecutionTime[vmId] > 0) ? 
-vmWaitingTime[vmId] + previousExecutionTime[vmId] : 0; 
-            System.out.printf("%d\t%d\t%.2f\t\t%.2f\t\t%.2f\n", 
-tasks[i].taskId, tasks[i].vmId, tasks[i].length, tasks[i].executionTime, 
-waitingTime); 
-            vmWaitingTime[vmId] += previousExecutionTime[vmId]; 
-            previousExecutionTime[vmId] = tasks[i].executionTime; 
-        } 
- 
-        float totalWaitingTime = 0.0f; 
-        for (int i = 0; i < vmCount; i++) { 
-            totalWaitingTime += vmWaitingTime[i]; 
-        } 
- 
-        float averageWaitingTime = totalWaitingTime / vmCount; 
-        System.out.printf("\nTotal Waiting Time: %.2f\n", totalWaitingTime); 
-        System.out.printf("Average Waiting Time (per VM): %.2f\n", 
-averageWaitingTime); 
- 
-        System.out.println("\nFinal Waiting Time for each VM:"); 
-        for (int i = 0; i < vmCount; i++) { 
-            System.out.printf("VM %d: %.2f\n", i + 1, vmWaitingTime[i]); 
-        } 
-    } 
-}
+#include <stdio.h>
 
+struct Task {
+ int taskId;
+ float length;
+ float executionTime;
+ int vmId;
+};
+void sortTasksByLength(struct Task tasks[], int n) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - 1 - i; j++) {
+ if (tasks[j].length > tasks[j + 1].length) {
+ struct Task temp = tasks[j];
+ tasks[j] = tasks[j + 1];
+ tasks[j + 1] = temp;
+ }
+ }
+ }
+}
+int main() {
+ int n, vmCount;
+ printf("Enter the number of tasks: ");
+ scanf("%d", &n);
+ printf("Enter the number of virtual machines (VMs): ");
+ scanf("%d", &vmCount);
+ struct Task tasks[n];
+ float vmWaitingTime[vmCount];
+ float previousExecutionTime[vmCount];
+ for (int i = 0; i < vmCount; i++) {
+ vmWaitingTime[i] = 0.0;
+ previousExecutionTime[i] = 0.0;
+ }
+
+ for (int i = 0; i < n; i++) {
+ tasks[i].taskId = i + 1;
+ printf("Enter the length of task %d: ", i + 1);
+ scanf("%f", &tasks[i].length);
+ printf("Enter the execution time of task %d: ", i + 1);
+ scanf("%f", &tasks[i].executionTime);
+ }
+ sortTasksByLength(tasks, n);
+ printf("\nTask Schedule:\n");
+ printf("TaskID\tVMID\tTask Length\tExecution Time\tWaiting Time\n");
+ for (int i = 0; i < n; i++) {
+ int vmId = i % vmCount;
+ tasks[i].vmId = vmId + 1;
+ float waitingTime = (previousExecutionTime[vmId] > 0) ? vmWaitingTime[vmId] +
+previousExecutionTime[vmId] : 0;
+ printf("%d\t%d\t%.2f\t\t%.2f\t\t%.2f\n", tasks[i].taskId, tasks[i].vmId,
+tasks[i].length, tasks[i].executionTime, waitingTime);
+ vmWaitingTime[vmId] += previousExecutionTime[vmId];
+ previousExecutionTime[vmId] = tasks[i].executionTime;
+ }
+ float totalWaitingTime = 0.0;
+ for (int i = 0; i < vmCount; i++) {
+ totalWaitingTime += vmWaitingTime[i];
+ }
+ float averageWaitingTime = totalWaitingTime / vmCount;
+ printf("\nTotal Waiting Time: %.2f\n", totalWaitingTime);
+ printf("Average Waiting Time (per VM): %.2f\n", averageWaitingTime);
+
+ printf("\nFinal Waiting Time for each VM:\n");
+ for (int i = 0; i < vmCount; i++) {
+
+ printf("VM %d: %.2f\n", i + 1, vmWaitingTime[i]);
+ }
+}
 
 #max-min
-import java.util.Arrays; 
-import java.util.Comparator; 
-import java.util.Scanner; 
- 
-class Task { 
-    int id; 
-    double length; 
-    double et; 
-    double waitingTime = 0; 
- 
-    public Task(int id, double length, double et) { 
-        this.id = id; 
-        this.length = length; 
-        this.et = et; 
-    } 
- 
-    @Override 
-    public String toString() { 
-        return "Task t" + id + "    ET: " + String.format("%.2f", et) + 
-"    Waiting Time: " + String.format("%.2f", waitingTime); 
-    } 
-} 
- 
-public class Scheduler { 
-    public static void main(String[] args) { 
-        Scanner scanner = new Scanner(System.in); 
- 
-        System.out.print("Enter the number of tasks: "); 
-        int numTasks = scanner.nextInt(); 
-        System.out.print("Enter the number of VMs: "); 
-        int numVMs = scanner.nextInt(); 
- 
-        Task[] tasks = new Task[numTasks]; 
-        double[] vmMips = new double[numVMs]; 
-        double[] vmCompletionTimes = new double[numVMs]; 
- 
-        for (int i = 0; i < numTasks; i++) { 
-            System.out.print("Enter length for Task " + (i + 1) + ": "); 
-            double length = scanner.nextDouble(); 
-                                                                                         
-            System.out.print("Enter execution time for Task " + (i + 1) + ": 
-"); 
-            double et = scanner.nextDouble(); 
-            tasks[i] = new Task(i + 1, length, et); 
-        } 
- 
-        for (int i = 0; i < numVMs; i++) { 
-            System.out.print("Enter MIPS value for VM" + (i + 1) + ": "); 
-            vmMips[i] = scanner.nextDouble(); 
-        } 
- 
-        Arrays.sort(tasks, Comparator.comparingDouble(t -> -t.length)); 
- 
-        Integer[] vmIndices = new Integer[numVMs]; 
-        for (int i = 0; i < numVMs; i++) { 
-            vmIndices[i] = i; 
-        } 
-        Arrays.sort(vmIndices, Comparator.comparingDouble(i -> -vmMips[i])); 
- 
-        String[] vmAssignmentOrder = new String[numVMs]; 
-        for (int i = 0; i < numVMs; i++) { 
-            vmAssignmentOrder[i] = "VM" + (vmIndices[i] + 1); 
-        } 
- 
-        System.out.println("Max-Min Scheduling:"); 
-        double abb = 0; 
-        double overallCompletionTime = 0; 
-        for (int i = 0; i < tasks.length; i++) { 
-            int vmIndex = i % numVMs; 
-            Task task = tasks[i]; 
- 
-            task.waitingTime = vmCompletionTimes[vmIndex]; 
-            vmCompletionTimes[vmIndex] += task.et; 
- 
-            System.out.println("Task t" + task.id + "    ET: " + task.et + 
-"    " + vmAssignmentOrder[vmIndex] + 
-                    "    Waiting Time: " + task.waitingTime); 
-             
-            if (i >= numTasks - numVMs) { 
-                abb += task.waitingTime; 
-            } 
-        } 
- 
-        for (double completionTime : vmCompletionTimes) { 
-            if (completionTime > overallCompletionTime) { 
-                overallCompletionTime = completionTime; 
-            } 
-        } 
- 
-double averageWaitingTime = abb / numVMs; 
-System.out.println("Total Waiting Time = " + abb); 
-System.out.println("Average Waiting Time = " + averageWaitingTime); 
-System.out.println("Overall Completion Time = " + 
-overallCompletionTime); 
-} 
-}
+#include <stdio.h>
+#include <stdlib.h>
 
+typedef struct {
+int id;
+double length;
+double et;
+double waitingTime;
+} Task;
+double* vmCompletionTimes; // Global variable for VM completion times
+// Compare tasks by length in descending order
+int compareTasks(const void* a, const void* b) {
+Task* taskA = (Task*)a;
+Task* taskB = (Task*)b;
+return (taskB->length > taskA->length) - (taskB->length < taskA->length);
+}
+// Compare VMs by completion time (ascending order)
+int compareVMCompletionTimes(const void* a, const void* b) {
+int vmA = *(int*)a;
+int vmB = *(int*)b;
+return (vmCompletionTimes[vmA] > vmCompletionTimes[vmB]) -
+(vmCompletionTimes[vmA] < vmCompletionTimes[vmB]);
+}
+int main() {
+int numTasks, numVMs;
+printf("Enter the number of tasks: ");
+scanf("%d", &numTasks);
+
+printf("Enter the number of VMs: ");
+scanf("%d", &numVMs);
+Task* tasks = (Task*)malloc(numTasks * sizeof(Task));
+double* vmMips = (double*)malloc(numVMs * sizeof(double)); // If you plan to use MIPSlater
+vmCompletionTimes = (double*)calloc(numVMs, sizeof(double)); // Initial completion time is0
+int* vmIndices = (int*)malloc(numVMs * sizeof(int));
+for (int i = 0; i < numTasks; i++) {
+printf("Enter length for Task %d: ", i + 1);
+scanf("%lf", &tasks[i].length);
+printf("Enter execution time for Task %d: ", i + 1);
+scanf("%lf", &tasks[i].et);
+tasks[i].id = i + 1;
+tasks[i].waitingTime = 0; // Initialize waiting time to 0
+}
+for (int i = 0; i < numVMs; i++) {
+printf("Enter MIPS value for VM%d: ", i + 1);
+scanf("%lf", &vmMips[i]);
+vmIndices[i] = i; // Index of VMs
+}
+// Sort tasks by length in descending order
+qsort(tasks, numTasks, sizeof(Task), compareTasks);
+printf("Max-Min Scheduling:\n");
+
+double totalWaitingTime = 0;
+double overallCompletionTime = 0;
+for (int i = 0; i < numTasks; i++) {
+// Sort VM indices based on their current completion time (least-loaded VM first)
+qsort(vmIndices, numVMs, sizeof(int), compareVMCompletionTimes);
+// Assign the current task to the least-loaded VM
+int vmIndex = vmIndices[0];
+Task* task = &tasks[i];
+task->waitingTime = vmCompletionTimes[vmIndex]; // Task waits until the VM is free
+vmCompletionTimes[vmIndex] += task->et; // VM's completion time increases by task'sexecution time
+printf("Task t%d ET: %.2f VM%d Waiting Time: %.2f\n", task->id, task->et, vmIndex
++ 1, task->waitingTime);
+// Accumulate the waiting time for calculating average later
+totalWaitingTime += task->waitingTime;
+}
+// Calculate the overall completion time (max of all VM completion times)
+for (int i = 0; i < numVMs; i++) {
+if (vmCompletionTimes[i] > overallCompletionTime) {
+overallCompletionTime = vmCompletionTimes[i];
+}
+}
+double averageWaitingTime = totalWaitingTime / numTasks;
+
+printf("Total Waiting Time = %.2f\n", totalWaitingTime);
+printf("Average Waiting Time = %.2f\n", averageWaitingTime);
+printf("Overall Completion Time = %.2f\n", overallCompletionTime);
+free(tasks);
+free(vmMips);
+free(vmCompletionTimes);
+free(vmIndices);
+return 0;
+}
 
 #min-min
-import java.util.Scanner; 
-class Task { 
-int taskId; 
-float length; 
-float executionTime; 
-int vmId; 
-Task(int taskId, float length, float executionTime) { 
-this.taskId = taskId; 
-this.length = length; 
-this.executionTime = executionTime; 
-this.vmId = 0;  
-} 
-} 
-public class Scheduler { 
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct {
+ int id;
+ double length;
+ double et;
+ double waitingTime;
+ int assignedVM;
+} Task;
+int main() {
+ int numTasks, numVMs;
+ printf("Enter the number of tasks: ");
+ scanf("%d", &numTasks);
+ printf("Enter the number of VMs: ");
+ scanf("%d", &numVMs);
+ Task* tasks = (Task*)malloc(numTasks * sizeof(Task));
+ double* vmMips = (double*)malloc(numVMs * sizeof(double));
+ double* vmCompletionTimes = (double*)calloc(numVMs, sizeof(double));
+ for (int i = 0; i < numTasks; i++) {
+ printf("Enter length for Task %d: ", i + 1);
+ scanf("%lf", &tasks[i].length);
+ printf("Enter execution time for Task %d: ", i + 1);
+ scanf("%lf", &tasks[i].et);
+ tasks[i].id = i + 1;
+ tasks[i].waitingTime = 0;
+ tasks[i].assignedVM = -1;
 
- 
-    public static void sortTasksByLength(Task[] tasks) { 
-        for (int i = 0; i < tasks.length - 1; i++) { 
-            for (int j = 0; j < tasks.length - 1 - i; j++) { 
-                if (tasks[j].length > tasks[j + 1].length) { 
-                    Task temp = tasks[j]; 
-                    tasks[j] = tasks[j + 1]; 
-                    tasks[j + 1] = temp; 
-                } 
-            } 
-        } 
-    } 
- 
-    public static void main(String[] args) { 
-        Scanner sc = new Scanner(System.in); 
- 
-        System.out.print("Enter the number of tasks: "); 
-        int n = sc.nextInt(); 
-        System.out.print("Enter the number of virtual machines (VMs): "); 
-        int vmCount = sc.nextInt(); 
- 
-        Task[] tasks = new Task[n]; 
-        float[] vmWaitingTime = new float[vmCount]; 
-        float[] previousExecutionTime = new float[vmCount]; 
- 
-        for (int i = 0; i < n; i++) { 
-            System.out.print("Enter the length of task " + (i + 1) + ": "); 
-            float length = sc.nextFloat(); 
-            System.out.print("Enter the execution time of task " + (i + 1) + 
-": "); 
-            float executionTime = sc.nextFloat(); 
-            tasks[i] = new Task(i + 1, length, executionTime); 
-        } 
- 
-        sortTasksByLength(tasks); 
- 
-        System.out.println("\nTask Schedule:"); 
-        System.out.printf("TaskID\tVMID\tTask Length\tExecution Time\tWaiting 
-Time\n"); 
- 
-        for (int i = 0; i < n; i++) { 
-            int vmId = i % vmCount; 
-            tasks[i].vmId = vmId + 1; 
-            float waitingTime = (previousExecutionTime[vmId] > 0) ? 
-vmWaitingTime[vmId] + previousExecutionTime[vmId] : 0; 
-            System.out.printf("%d\t%d\t%.2f\t\t%.2f\t\t%.2f\n", 
-tasks[i].taskId, tasks[i].vmId, tasks[i].length, tasks[i].executionTime, 
-waitingTime); 
-                                                                                               
+ }
+ for (int i = 0; i < numVMs; i++) {
+ printf("Enter MIPS value for VM%d: ", i + 1);
+ scanf("%lf", &vmMips[i]);
+ }
+ printf("Min-Min Scheduling:\n");
+ double overallCompletionTime = 0;
+ double totalWaitingTime = 0;
+ for (int i = 0; i < numTasks; i++) {
+ int bestTaskIndex = -1;
+ int bestVMIndex = -1;
+ double bestCompletionTime = 1e9;
+ for (int t = 0; t < numTasks; t++) {
+ if (tasks[t].assignedVM == -1) {
+ for (int v = 0; v < numVMs; v++) {
+ double completionTime = vmCompletionTimes[v] + tasks[t].et;
+ if (completionTime < bestCompletionTime) {
+ bestCompletionTime = completionTime;
+ bestTaskIndex = t;
+ bestVMIndex = v;
+ }
+ }
+ }
+ }
+ tasks[bestTaskIndex].assignedVM = bestVMIndex;
+ tasks[bestTaskIndex].waitingTime = vmCompletionTimes[bestVMIndex];
+ vmCompletionTimes[bestVMIndex] += tasks[bestTaskIndex].et;
+ printf("Task t%d ET: %.2f VM%d Waiting Time: %.2f\n", tasks[bestTaskIndex].id,
+tasks[bestTaskIndex].et, bestVMIndex + 1, tasks[bestTaskIndex].waitingTime);
+ totalWaitingTime += tasks[bestTaskIndex].waitingTime;
 
-vmWaitingTime[vmId] += previousExecutionTime[vmId]; 
-previousExecutionTime[vmId] = tasks[i].executionTime; 
-} 
-float totalWaitingTime = 0.0f; 
-for (int i = 0; i < vmCount; i++) { 
-totalWaitingTime += vmWaitingTime[i]; 
-} 
-float averageWaitingTime = totalWaitingTime / vmCount; 
-System.out.printf("\nTotal Waiting Time: %.2f\n", totalWaitingTime); 
-System.out.printf("Average Waiting Time (per VM): %.2f\n", 
-averageWaitingTime); 
-System.out.println("\nFinal Waiting Time for each VM:"); 
-for (int i = 0; i < vmCount; i++) { 
-System.out.printf("VM %d: %.2f\n", i + 1, vmWaitingTime[i]); 
-} 
-} 
+ }
+ for (int i = 0; i < numVMs; i++) {
+ if (vmCompletionTimes[i] > overallCompletionTime) {
+ overallCompletionTime = vmCompletionTimes[i];
+ }
+ }
+ double averageWaitingTime = totalWaitingTime / numTasks;
+ printf("Total Waiting Time = %.2f\n", totalWaitingTime);
+ printf("Average Waiting Time = %.2f\n", averageWaitingTime);
+ printf("Overall Completion Time = %.2f\n", overallCompletionTime);
+ free(tasks);
+ free(vmMips);
+ free(vmCompletionTimes);
 }
+
